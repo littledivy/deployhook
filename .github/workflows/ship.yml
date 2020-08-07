@@ -1,0 +1,28 @@
+name: Ship
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      CARGO_INCREMENTAL: 0
+      RUST_BACKTRACE: full
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.13.1' # The Go version to download (if necessary) and use.
+      - name: Build
+        run: make
+
+      - name: Release
+        uses: ncipollo/release-action@v1
+        with:
+          draft: true
+          tag: VERSIONHERE
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: "deployhook"

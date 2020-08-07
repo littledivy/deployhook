@@ -3,12 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/valyala/fasthttp"
 	"io"
 	"log"
 	"net/http"
 	"os"
-
-	"github.com/valyala/fasthttp"
+	"os/exec"
 )
 
 var (
@@ -16,6 +16,7 @@ var (
 	compress = flag.Bool("compress", false, "Whether to enable transparent response compression")
 	name     = flag.String("name", "nest-api-rust", "Name of the release binary")
 	url      = flag.String("url", "https://github.com/nestdotland/api/releases/latest/download/nest-api-rust", "Release download URL")
+	service  = flag.String("service", "nest-api-next", "Name of the systemd service")
 )
 
 func main() {
@@ -36,6 +37,8 @@ func requestHandler(ctx *fasthttp.RequestCtx) {
 	fmt.Fprintf(ctx, "Deployed!\n\n")
 	if string(ctx.Path()) == "/webhook" {
 		DownloadFile(*name, *url)
+		cmd := exec.Command("systemctl", "restart", *service)
+		cmd.Run()
 	} else {
 		fmt.Fprintf(ctx, "Request method is %q\n", ctx.Method())
 		fmt.Fprintf(ctx, "RequestURI is %q\n", ctx.RequestURI())
